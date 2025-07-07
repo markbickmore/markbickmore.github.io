@@ -1,37 +1,40 @@
 const chart = LightweightCharts.createChart(document.getElementById('chart'), {
   width: 800,
   height: 500,
-  layout: { backgroundColor: '#ffffff', textColor: '#000' },
-  grid: { vertLines: { color: '#eee' }, horzLines: { color: '#eee' } },
+  layout: {
+    backgroundColor: '#ffffff',
+    textColor: '#000000',
+  },
+  grid: {
+    vertLines: { color: '#eeeeee' },
+    horzLines: { color: '#eeeeee' },
+  },
 });
 
 const candleSeries = chart.addCandlestickSeries();
 
-// Dummy price data
 fetch('https://api.coingecko.com/api/v3/coins/bitcoin/ohlc?vs_currency=usd&days=7')
-  .then(res => res.json())
+  .then(response => response.json())
   .then(data => {
-    const formatted = data.map(d => ({
+    const formattedData = data.map(d => ({
       time: d[0] / 1000,
       open: d[1],
       high: d[2],
       low: d[3],
       close: d[4],
     }));
-    candleSeries.setData(formatted);
-    drawMA(formatted);
-  });
+    candleSeries.setData(formattedData);
 
-function drawMA(data) {
-  const maSeries = chart.addLineSeries({ color: 'blue', lineWidth: 2 });
-  const maData = data.map((d, i) => {
-    if (i < 5) return null;
-    const avg = data.slice(i - 5, i).reduce((sum, x) => sum + x.close, 0) / 5;
-    return { time: d.time, value: avg };
-  }).filter(Boolean);
-  maSeries.setData(maData);
+    const maSeries = chart.addLineSeries({ color: 'blue', lineWidth: 2 });
+    const maData = formattedData.map((bar, i, arr) => {
+      if (i < 4) return null;
+      const avg = arr.slice(i - 4, i).reduce((sum, b) => sum + b.close, 0) / 4;
+      return { time: bar.time, value: avg };
+    }).filter(Boolean);
 
-  document.getElementById('showMA').addEventListener('change', (e) => {
-    maSeries.applyOptions({ visible: e.target.checked });
+    maSeries.setData(maData);
+
+    document.getElementById('showMA').addEventListener('change', (e) => {
+      maSeries.applyOptions({ visible: e.target.checked });
+    });
   });
-}
