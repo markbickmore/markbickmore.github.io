@@ -1,11 +1,87 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <title>Chart Trainer</title>
-  </head>
-  <body>
-    <h1>It works!</h1>
-    <p>This is your GitHub Pages site.</p>
-  </body>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chart Trainer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 2rem;
+      background-color: #f4f4f4;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    #question {
+      font-size: 2rem;
+      margin: 2rem 0;
+    }
+
+    #answerInput {
+      font-size: 1.5rem;
+      padding: 0.5rem;
+      width: 200px;
+    }
+
+    button {
+      font-size: 1.2rem;
+      padding: 0.5rem 1rem;
+      margin: 1rem;
+    }
+
+    #feedback {
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Chart Pattern Trainer</h1>
+  <div id="question">Loading...</div>
+  <input id="answerInput" type="text" placeholder="Enter pattern name" />
+  <br />
+  <button onclick="checkAnswer()">Submit</button>
+  <button onclick="newQuestion()">Next Pattern</button>
+  <div id="feedback"></div>
+
+  <script>
+    const patterns = [
+      { name: 'Head and Shoulders', question: 'What pattern shows a peak (shoulder), a higher peak (head), then a lower peak (shoulder)?' },
+      { name: 'Cup and Handle', question: 'What pattern looks like a rounded bottom followed by a slight pullback?' },
+      { name: 'Double Bottom', question: 'What pattern has two low points at about the same level, forming a "W" shape?' },
+      { name: 'Bull Flag', question: 'What pattern follows a strong upward move, then consolidates in a downward sloping channel?' },
+      { name: 'Ascending Triangle', question: 'What pattern forms with a flat resistance level and higher lows over time?' }
+    ];
+
+    let current = {};
+
+    function newQuestion() {
+      document.getElementById('feedback').innerText = '';
+      const randomIndex = Math.floor(Math.random() * patterns.length);
+      current = patterns[randomIndex];
+      document.getElementById('question').innerText = current.question;
+      document.getElementById('answerInput').value = '';
+    }
+
+    function checkAnswer() {
+      const userAnswer = document.getElementById('answerInput').value.trim().toLowerCase();
+      const correctAnswer = current.name.toLowerCase();
+      const feedback = document.getElementById('feedback');
+      if (userAnswer === correctAnswer) {
+        feedback.innerText = '✅ Correct!';
+        feedback.style.color = 'green';
+      } else {
+        feedback.innerText = `❌ Incorrect. Correct answer: ${current.name}`;
+        feedback.style.color = 'red';
+      }
+    }
+
+    // Load first question
+    window.onload = newQuestion;
+  </script>
+</body>
 </html>
