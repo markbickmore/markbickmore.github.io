@@ -1,56 +1,423 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Chart Trainer</title>
-  <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDS Event Planning Tool - Ward & Stake Activities</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        'lds': {
+                            'blue': '#003f7f',
+                            'gold': '#c69c6d',
+                            'light-blue': '#4a90e2',
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-  <h1>Interactive Chart Trainer</h1>
-  <div id="chart" style="height: 500px;"></div>
-  <label><input type="checkbox" id="showMA"> Show Moving Average</label>
+<body class="bg-gray-50 font-sans">
+    <!-- Navigation Header -->
+    <nav class="bg-lds-blue text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <i class="fas fa-calendar-check text-2xl text-lds-gold mr-3"></i>
+                    <h1 class="text-xl font-semibold">LDS Event Planning Tool</h1>
+                </div>
+                <div class="hidden md:flex space-x-6">
+                    <a href="#dashboard" class="nav-link px-3 py-2 rounded-md text-sm font-medium hover:bg-lds-light-blue transition-colors" data-section="dashboard">
+                        <i class="fas fa-home mr-2"></i>Dashboard
+                    </a>
+                    <a href="#events" class="nav-link px-3 py-2 rounded-md text-sm font-medium hover:bg-lds-light-blue transition-colors" data-section="events">
+                        <i class="fas fa-calendar-alt mr-2"></i>Events
+                    </a>
+                    <a href="#auxiliaries" class="nav-link px-3 py-2 rounded-md text-sm font-medium hover:bg-lds-light-blue transition-colors" data-section="auxiliaries">
+                        <i class="fas fa-users mr-2"></i>Auxiliaries
+                    </a>
+                    <a href="#tasks" class="nav-link px-3 py-2 rounded-md text-sm font-medium hover:bg-lds-light-blue transition-colors" data-section="tasks">
+                        <i class="fas fa-tasks mr-2"></i>Tasks
+                    </a>
+                    <a href="#calendar" class="nav-link px-3 py-2 rounded-md text-sm font-medium hover:bg-lds-light-blue transition-colors" data-section="calendar">
+                        <i class="fas fa-calendar mr-2"></i>Calendar
+                    </a>
+                    <a href="#notifications" class="nav-link px-3 py-2 rounded-md text-sm font-medium hover:bg-lds-light-blue transition-colors" data-section="notifications">
+                        <i class="fas fa-bell mr-2"></i>Notifications
+                        <span id="notification-badge" class="hidden bg-red-500 text-white rounded-full px-2 py-1 text-xs ml-1">0</span>
+                    </a>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="text-white hover:text-lds-gold">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-lds-light-blue">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="#dashboard" class="nav-link-mobile block px-3 py-2 rounded-md text-base font-medium hover:bg-lds-blue" data-section="dashboard">
+                    <i class="fas fa-home mr-2"></i>Dashboard
+                </a>
+                <a href="#events" class="nav-link-mobile block px-3 py-2 rounded-md text-base font-medium hover:bg-lds-blue" data-section="events">
+                    <i class="fas fa-calendar-alt mr-2"></i>Events
+                </a>
+                <a href="#auxiliaries" class="nav-link-mobile block px-3 py-2 rounded-md text-base font-medium hover:bg-lds-blue" data-section="auxiliaries">
+                    <i class="fas fa-users mr-2"></i>Auxiliaries
+                </a>
+                <a href="#tasks" class="nav-link-mobile block px-3 py-2 rounded-md text-base font-medium hover:bg-lds-blue" data-section="tasks">
+                    <i class="fas fa-tasks mr-2"></i>Tasks
+                </a>
+                <a href="#calendar" class="nav-link-mobile block px-3 py-2 rounded-md text-base font-medium hover:bg-lds-blue" data-section="calendar">
+                    <i class="fas fa-calendar mr-2"></i>Calendar
+                </a>
+                <a href="#notifications" class="nav-link-mobile block px-3 py-2 rounded-md text-base font-medium hover:bg-lds-blue" data-section="notifications">
+                    <i class="fas fa-bell mr-2"></i>Notifications
+                </a>
+            </div>
+        </div>
+    </nav>
 
-  <script>
-    const chart = LightweightCharts.createChart(document.getElementById('chart'), {
-      width: 800,
-      height: 500,
-      layout: {
-        backgroundColor: '#ffffff',
-        textColor: '#000000',
-      },
-      grid: {
-        vertLines: { color: '#eeeeee' },
-        horzLines: { color: '#eeeeee' },
-      },
-    });
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Dashboard Section -->
+        <section id="dashboard-section" class="content-section">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Dashboard</h2>
+                <p class="text-gray-600">Overview of all ward and stake activities, tasks, and assignments</p>
+            </div>
 
-    const candleSeries = chart.addCandlestickSeries();
+            <!-- Quick Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Active Events</p>
+                            <p id="active-events-count" class="text-2xl font-bold text-lds-blue">0</p>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-full">
+                            <i class="fas fa-calendar-alt text-lds-blue text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Pending Tasks</p>
+                            <p id="pending-tasks-count" class="text-2xl font-bold text-yellow-600">0</p>
+                        </div>
+                        <div class="bg-yellow-100 p-3 rounded-full">
+                            <i class="fas fa-tasks text-yellow-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Active Auxiliaries</p>
+                            <p id="active-auxiliaries-count" class="text-2xl font-bold text-green-600">6</p>
+                        </div>
+                        <div class="bg-green-100 p-3 rounded-full">
+                            <i class="fas fa-users text-green-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">This Month's Events</p>
+                            <p id="month-events-count" class="text-2xl font-bold text-purple-600">0</p>
+                        </div>
+                        <div class="bg-purple-100 p-3 rounded-full">
+                            <i class="fas fa-calendar-week text-purple-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-    fetch('https://api.coingecko.com/api/v3/coins/bitcoin/ohlc?vs_currency=usd&days=7')
-      .then(response => response.json())
-      .then(data => {
-        const formattedData = data.map(d => ({
-          time: d[0] / 1000,
-          open: d[1],
-          high: d[2],
-          low: d[3],
-          close: d[4],
-        }));
-        candleSeries.setData(formattedData);
+            <!-- Recent Activity & Upcoming Events -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Recent Activity -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-clock text-lds-gold mr-2"></i>Recent Activity
+                    </h3>
+                    <div id="recent-activity" class="space-y-4">
+                        <!-- Activity items will be populated by JavaScript -->
+                    </div>
+                </div>
 
-        const maSeries = chart.addLineSeries({ color: 'blue', lineWidth: 2 });
-        const maData = formattedData.map((bar, i, arr) => {
-          if (i < 4) return null;
-          const avg = arr.slice(i - 4, i).reduce((sum, b) => sum + b.close, 0) / 4;
-          return { time: bar.time, value: avg };
-        }).filter(Boolean);
+                <!-- Upcoming Events -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-calendar-plus text-lds-gold mr-2"></i>Upcoming Events
+                    </h3>
+                    <div id="upcoming-events" class="space-y-4">
+                        <!-- Upcoming events will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </section>
 
-        maSeries.setData(maData);
+        <!-- Events Section -->
+        <section id="events-section" class="content-section hidden">
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-900 mb-2">Event Management</h2>
+                    <p class="text-gray-600">Create, organize, and manage ward and stake activities</p>
+                </div>
+                <button id="create-event-btn" onclick="window.EventsModule && window.EventsModule.openEventForm(); return false;" class="bg-lds-blue text-white px-6 py-3 rounded-lg hover:bg-lds-light-blue transition-colors font-medium">
+                    <i class="fas fa-plus mr-2"></i>Create New Event
+                </button>
+            </div>
 
-        document.getElementById('showMA').addEventListener('change', (e) => {
-          maSeries.applyOptions({ visible: e.target.checked });
-        });
-      });
-  </script>
+            <!-- Event Filters -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Event Type</label>
+                        <select id="event-type-filter" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                            <option value="">All Types</option>
+                            <option value="Ward Activity">Ward Activity</option>
+                            <option value="Stake Activity">Stake Activity</option>
+                            <option value="Youth Activity">Youth Activity</option>
+                            <option value="Relief Society">Relief Society</option>
+                            <option value="Elders Quorum">Elders Quorum</option>
+                            <option value="Primary">Primary</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                        <select id="event-status-filter" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                            <option value="">All Statuses</option>
+                            <option value="Planning">Planning</option>
+                            <option value="Approved">Approved</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Organizer</label>
+                        <select id="event-organizer-filter" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                            <option value="">All Auxiliaries</option>
+                            <!-- Populated by JavaScript -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                        <input type="text" id="event-search" placeholder="Search events..." class="w-full border border-gray-300 rounded-md px-3 py-2">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Events List -->
+            <div id="events-list" class="space-y-4">
+                <!-- Events will be populated by JavaScript -->
+            </div>
+        </section>
+
+        <!-- Auxiliaries Section -->
+        <section id="auxiliaries-section" class="content-section hidden">
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-900 mb-2">Auxiliaries & Committees</h2>
+                    <p class="text-gray-600">Manage ward auxiliaries and committee information</p>
+                </div>
+                <button id="add-auxiliary-btn" onclick="window.auxiliaryManager ? window.auxiliaryManager.showAuxiliaryForm() : alert('Loading...')" class="bg-lds-blue text-white px-6 py-3 rounded-lg hover:bg-lds-light-blue transition-colors font-medium">
+                    <i class="fas fa-plus mr-2"></i>Add Auxiliary
+                </button>
+            </div>
+
+            <!-- Auxiliaries Grid -->
+            <div id="auxiliaries-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Auxiliaries will be populated by JavaScript -->
+            </div>
+        </section>
+
+        <!-- Tasks Section -->
+        <section id="tasks-section" class="content-section hidden">
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-900 mb-2">Task Management</h2>
+                    <p class="text-gray-600">Assign and track tasks for event planning</p>
+                </div>
+                <button id="create-task-btn" onclick="window.TasksModule && window.TasksModule.openTaskForm();" class="bg-lds-blue text-white px-6 py-3 rounded-lg hover:bg-lds-light-blue transition-colors font-medium">
+                    <i class="fas fa-plus mr-2"></i>Create Task
+                </button>
+            </div>
+
+            <!-- Task Filters and View Options -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex flex-wrap gap-4">
+                        <select id="task-event-filter" class="border border-gray-300 rounded-md px-3 py-2">
+                            <option value="">All Events</option>
+                            <!-- Populated by JavaScript -->
+                        </select>
+                        <select id="task-status-filter" class="border border-gray-300 rounded-md px-3 py-2">
+                            <option value="">All Statuses</option>
+                            <option value="Not Started">Not Started</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Waiting">Waiting</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                        <select id="task-auxiliary-filter" class="border border-gray-300 rounded-md px-3 py-2">
+                            <option value="">All Auxiliaries</option>
+                            <!-- Populated by JavaScript -->
+                        </select>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="task-view-list" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 active">
+                            <i class="fas fa-list"></i>
+                        </button>
+                        <button id="task-view-board" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
+                            <i class="fas fa-columns"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tasks List View -->
+            <div id="tasks-list-view" class="space-y-4">
+                <!-- Tasks will be populated by JavaScript -->
+            </div>
+
+            <!-- Tasks Kanban Board View -->
+            <div id="tasks-board-view" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-gray-100 rounded-lg p-4">
+                    <h3 class="font-semibold text-gray-700 mb-4">Not Started</h3>
+                    <div id="tasks-not-started" class="space-y-3">
+                        <!-- Tasks will be populated by JavaScript -->
+                    </div>
+                </div>
+                <div class="bg-blue-100 rounded-lg p-4">
+                    <h3 class="font-semibold text-blue-700 mb-4">In Progress</h3>
+                    <div id="tasks-in-progress" class="space-y-3">
+                        <!-- Tasks will be populated by JavaScript -->
+                    </div>
+                </div>
+                <div class="bg-yellow-100 rounded-lg p-4">
+                    <h3 class="font-semibold text-yellow-700 mb-4">Waiting</h3>
+                    <div id="tasks-waiting" class="space-y-3">
+                        <!-- Tasks will be populated by JavaScript -->
+                    </div>
+                </div>
+                <div class="bg-green-100 rounded-lg p-4">
+                    <h3 class="font-semibold text-green-700 mb-4">Completed</h3>
+                    <div id="tasks-completed" class="space-y-3">
+                        <!-- Tasks will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Calendar Section -->
+        <section id="calendar-section" class="content-section hidden">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Event Calendar</h2>
+                <p class="text-gray-600">View and manage events in calendar format</p>
+            </div>
+
+            <!-- Calendar Controls -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex items-center gap-4">
+                        <button id="calendar-prev" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <h3 id="calendar-month-year" class="text-xl font-semibold text-gray-900">Loading...</h3>
+                        <button id="calendar-next" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="calendar-today" class="px-4 py-2 bg-lds-blue text-white rounded-md hover:bg-lds-light-blue">
+                            Today
+                        </button>
+                        <select id="calendar-view" class="border border-gray-300 rounded-md px-3 py-2">
+                            <option value="month">Month View</option>
+                            <option value="week">Week View</option>
+                            <option value="agenda">Agenda View</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calendar Grid -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div id="calendar-container" class="min-h-96">
+                    <!-- Calendar will be populated by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Notifications Section -->
+        <section id="notifications-section" class="content-section hidden">
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-900 mb-2">Notifications</h2>
+                    <p class="text-gray-600">Stay updated on event assignments and task updates</p>
+                </div>
+                <div class="flex gap-2">
+                    <button id="mark-all-read" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
+                        Mark All Read
+                    </button>
+                    <button id="clear-notifications" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+                        Clear All
+                    </button>
+                </div>
+            </div>
+
+            <!-- Notification Filters -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <div class="flex flex-wrap gap-4">
+                    <select id="notification-type-filter" class="border border-gray-300 rounded-md px-3 py-2">
+                        <option value="">All Types</option>
+                        <option value="Task Assigned">Task Assigned</option>
+                        <option value="Task Due Soon">Task Due Soon</option>
+                        <option value="Event Reminder">Event Reminder</option>
+                        <option value="Assignment Request">Assignment Request</option>
+                    </select>
+                    <select id="notification-status-filter" class="border border-gray-300 rounded-md px-3 py-2">
+                        <option value="">All Statuses</option>
+                        <option value="Unread">Unread</option>
+                        <option value="Read">Read</option>
+                        <option value="Archived">Archived</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Notifications List -->
+            <div id="notifications-list" class="space-y-4">
+                <!-- Notifications will be populated by JavaScript -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal Container -->
+    <div id="modal-container" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <!-- Modal content will be inserted here by JavaScript -->
+    </div>
+
+    <!-- JavaScript -->
+    <script src="js/main.js" defer></script>
+    <script src="js/events.js" defer></script>
+    <script src="js/auxiliaries.js" defer></script>
+    <script src="js/tasks.js" defer></script>
+    <script src="js/calendar.js" defer></script>
+    <script src="js/notifications.js" defer></script>
 </body>
 </html>
