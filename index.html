@@ -1,56 +1,133 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Chart Trainer</title>
-  <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Crypto Chart Trainer</title>
+  <meta name="description" content="Interactive candlestick training surface powered by Lightweight Charts and live market data." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:opsz,wght@24,400&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.min.js" integrity="sha384-mVGE38WoG7xJEEgIjgSYmz7P7p2+lKuBhTIAYEs+dlKPV0cKdifD8mfY8QVvMX3M" crossorigin="anonymous"></script>
+  <script defer src="script.js"></script>
 </head>
 <body>
-  <h1>Interactive Chart Trainer</h1>
-  <div id="chart" style="height: 500px;"></div>
-  <label><input type="checkbox" id="showMA"> Show Moving Average</label>
+  <a class="skip-link" href="#chart">Skip to chart</a>
+  <header class="hero">
+    <div class="container">
+      <h1>Crypto Chart Trainer</h1>
+      <p>
+        Practice reading candlesticks with configurable overlays and real OHLC data from CoinGecko.
+        Adjust the market, time range, and moving average window to see how price structure evolves.
+      </p>
+    </div>
+  </header>
 
-  <script>
-    const chart = LightweightCharts.createChart(document.getElementById('chart'), {
-      width: 800,
-      height: 500,
-      layout: {
-        backgroundColor: '#ffffff',
-        textColor: '#000000',
-      },
-      grid: {
-        vertLines: { color: '#eeeeee' },
-        horzLines: { color: '#eeeeee' },
-      },
-    });
+  <main class="container">
+    <section class="panel controls" aria-labelledby="controls-heading">
+      <div class="panel-header">
+        <h2 id="controls-heading">Training setup</h2>
+        <button id="refresh" type="button" class="ghost-button" title="Refetch data">
+          <span class="material-symbol" aria-hidden="true">refresh</span>
+          <span class="sr-only">Refetch data</span>
+        </button>
+      </div>
+      <form id="control-form" class="control-grid">
+        <label class="field">
+          <span class="field-label">Market</span>
+          <select id="market" name="market">
+            <option value="bitcoin" selected>Bitcoin (BTC)</option>
+            <option value="ethereum">Ethereum (ETH)</option>
+            <option value="litecoin">Litecoin (LTC)</option>
+            <option value="ripple">XRP</option>
+          </select>
+        </label>
 
-    const candleSeries = chart.addCandlestickSeries();
+        <fieldset class="field">
+          <legend class="field-label">Range</legend>
+          <div class="range-buttons" role="radiogroup" aria-label="History range">
+            <button type="button" data-range="1" aria-pressed="false">1D</button>
+            <button type="button" data-range="7" aria-pressed="true">7D</button>
+            <button type="button" data-range="30" aria-pressed="false">30D</button>
+            <button type="button" data-range="90" aria-pressed="false">90D</button>
+          </div>
+        </fieldset>
 
-    fetch('https://api.coingecko.com/api/v3/coins/bitcoin/ohlc?vs_currency=usd&days=7')
-      .then(response => response.json())
-      .then(data => {
-        const formattedData = data.map(d => ({
-          time: d[0] / 1000,
-          open: d[1],
-          high: d[2],
-          low: d[3],
-          close: d[4],
-        }));
-        candleSeries.setData(formattedData);
+        <div class="field">
+          <label class="checkbox">
+            <input type="checkbox" id="ma-toggle" name="ma-toggle" checked />
+            <span>Show moving average</span>
+          </label>
+          <label class="field slider">
+            <span class="field-label">Window</span>
+            <input type="range" id="ma-window" name="ma-window" min="3" max="20" value="8" />
+            <output for="ma-window" id="ma-window-output">8</output>
+          </label>
+        </div>
 
-        const maSeries = chart.addLineSeries({ color: 'blue', lineWidth: 2 });
-        const maData = formattedData.map((bar, i, arr) => {
-          if (i < 4) return null;
-          const avg = arr.slice(i - 4, i).reduce((sum, b) => sum + b.close, 0) / 4;
-          return { time: bar.time, value: avg };
-        }).filter(Boolean);
+        <div class="field">
+          <label class="checkbox">
+            <input type="checkbox" id="volume-toggle" name="volume-toggle" />
+            <span>Overlay volume histogram</span>
+          </label>
+        </div>
+      </form>
+      <p id="status" role="status" aria-live="polite" class="status"></p>
+    </section>
 
-        maSeries.setData(maData);
+    <section class="panel chart" aria-labelledby="chart-heading">
+      <div class="panel-header">
+        <h2 id="chart-heading">Candlestick practice</h2>
+        <span id="last-updated" class="subtle"></span>
+      </div>
+      <div id="chart"></div>
+    </section>
 
-        document.getElementById('showMA').addEventListener('change', (e) => {
-          maSeries.applyOptions({ visible: e.target.checked });
-        });
-      });
-  </script>
+    <section class="panel insights" aria-labelledby="insights-heading">
+      <h2 id="insights-heading">Session insights</h2>
+      <dl class="insights-grid">
+        <div>
+          <dt>Close</dt>
+          <dd id="stat-close">–</dd>
+        </div>
+        <div>
+          <dt>High</dt>
+          <dd id="stat-high">–</dd>
+        </div>
+        <div>
+          <dt>Low</dt>
+          <dd id="stat-low">–</dd>
+        </div>
+        <div>
+          <dt>Volume</dt>
+          <dd id="stat-volume">–</dd>
+        </div>
+        <div>
+          <dt>MA value</dt>
+          <dd id="stat-ma">–</dd>
+        </div>
+        <div>
+          <dt>Candles loaded</dt>
+          <dd id="stat-count">–</dd>
+        </div>
+      </dl>
+      <p class="tip">
+        Use keyboard arrow keys while hovering the chart to move the crosshair one candle at a time.
+      </p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>
+        Data courtesy of <a href="https://www.coingecko.com/en/api" rel="noopener">CoinGecko</a>.
+        Charts rendered with <a href="https://tradingview.github.io/lightweight-charts/" rel="noopener">Lightweight Charts</a>.
+      </p>
+    </div>
+  </footer>
 </body>
 </html>
